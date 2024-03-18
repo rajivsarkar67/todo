@@ -1,0 +1,29 @@
+<button style="font-size: 1.3rem;" (click)="addTodo()">➕</button>
+<br/>
+
+<div>
+    @if (todos.length){
+        @for (todo of todos; track todo.id; let todoIndex = $index){
+            <div [ngStyle]="{'background-color': colorArr[todoIndex % colorArr.length]}" style="border-radius: 1rem; padding: 0.1rem 0 0.1rem 0.8rem; margin: 1rem;">
+                <p style="font-size: 1.5rem; font-weight: 700; margin: 0;" [ngStyle]="todo.status === 'Complete'?{'text-decoration':'line-through'}:{'text-decoration':'none'}">
+                    <span>
+                        <input type="checkbox" style="margin-right: 1rem;" [checked]="todo.status === 'Complete'" (click)="toggleStatusOfTodo($event, todoIndex)"/>{{todo.title}}
+                        <button (click)="addSubTodo(todoIndex)">➕</button>
+                    </span>
+                    <button style="float: right; margin-right: 1rem;" (click)="deleteTodo(todoIndex)">X</button>
+                </p>
+                <div style="padding-left: 1.6rem;">
+                    @for (subTodo of todo.subTodos; track subTodo.id; let subTodoIndex = $index){
+                        <p style="font-size: 1.1rem;" [ngStyle]="subTodo.status === 'Complete'?{'text-decoration':'line-through'}:{'text-decoration':'none'}">
+                            <input type="checkbox" style="margin-right: 1rem;" [checked]="subTodo.status === 'Complete'" (click)="toggleStatusOfSubTodo($event, todoIndex, subTodoIndex)"/>{{subTodo.title}}
+                            <button style="float: right; margin-right: 1rem;" (click)="deleteSubTodo(todoIndex, subTodoIndex)">X</button>
+                        </p>
+                    }
+                </div>
+            </div>
+        }        
+    }
+    @else{
+        <h1>No Todos present!</h1>
+    }
+</div>
