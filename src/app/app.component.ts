@@ -12,36 +12,8 @@ import { SubTodo, Todo } from './custom.interface';
 })
 export class AppComponent {
 
-  colorArr = ['lightcoral', 'lightpink', 'lightskyblue', 'gray', 'violet'];
+  colorArr = ['lightcoral', 'lightskyblue', 'lightgreen', 'lightgray', 'violet', '#f1f17e'];
   todos: Todo[] = [];
-  // todos : Todo[] = [
-  //   {id: 1, title: 'Shopping', status: 'In Progress', subTodos: [
-  //     {id: 1, title: 'Buy Namkeen', status: 'In Progress'},
-  //     {id: 2, title: 'Buy badaam', status: 'In Progress'}
-  //   ]},
-  //   {id: 2, title: 'Study', status: 'In Progress', subTodos: [
-  //     {id: 1, title: 'Todo App all functionality', status: 'In Progress'},
-  //     {id: 2, title: 'Complete reading Angular in 1 day', status: 'In Progress'},
-  //     {id: 3, title: 'Watch 14th video of backend', status: 'Complete'}
-  //   ]},
-  //   {id: 3, title: 'Scooty Maintenance afafs', status: 'Complete', subTodos: [
-  //     {id: 1, title: 'Make PUC of scooty', status: 'Complete'}
-  //   ]},
-  //   {id: 4, title: 'Scooty Maintenance maintenance', status: 'Complete', subTodos: [
-  //     {id: 1, title: 'Make PUC of scooty', status: 'Complete'},
-  //     {id: 2, title: 'Make PUC of scooty', status: 'Complete'},
-  //   ]},
-  //   {id: 5, title: 'Study', status: 'In Progress', subTodos: [
-  //     {id: 1, title: 'Todo App all functionality', status: 'In Progress'},
-  //     {id: 2, title: 'Complete reading Angular in 1 day afiofj ajiofja', status: 'In Progress'},
-  //     {id: 3, title: 'Watch 14th video of backend', status: 'Complete'}
-  //   ]},
-  //   {id: 6, title: 'Study', status: 'In Progress', subTodos: [
-  //     {id: 1, title: 'Todo App all functionality', status: 'In Progress'},
-  //     {id: 2, title: 'Complete reading Angular in 1 day', status: 'In Progress'},
-  //     {id: 3, title: 'Watch 14th video of backend', status: 'Complete'}
-  //   ]},
-  // ];
 
   ngOnInit(){
     const storedData = localStorage.getItem('todos');
@@ -85,20 +57,25 @@ export class AppComponent {
   }
 
   deleteTodo(todoIndex: number){
-    this.todos.splice(todoIndex, 1);
-    localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    let sure: boolean = confirm('Are you sure you want to delete?');
+    if(sure){
+      this.todos.splice(todoIndex, 1);
+      localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    }
   }
 
   deleteSubTodo(todoIndex: number, subTodoIndex: number){
-    this.todos[todoIndex].subTodos.splice(subTodoIndex, 1);
-    this.checkSubTodosAndMarkParentTodo(todoIndex);
-    localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    let sure: boolean = confirm('Are you sure you want to delete?');
+    if(sure){
+      this.todos[todoIndex].subTodos.splice(subTodoIndex, 1);
+      this.checkSubTodosAndMarkParentTodo(todoIndex);
+      localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    }
   }
 
   // This function is to check if all the sub-todos are completed, then mark the parent also as complete
   checkSubTodosAndMarkParentTodo(todoIndex: number){
     for(let i=0; i<this.todos[todoIndex].subTodos.length; i++){
-      // console.log(i);
       if(this.todos[todoIndex].subTodos[i].status === "In Progress"){
         return;
       }
@@ -110,8 +87,13 @@ export class AppComponent {
     let currentTodo = prompt('Enter the Todo Heading: ');
     if(currentTodo?.trim()){  // Only process if user entered something
       let largestId = this.todos[this.todos.length-1]?.id || 0;
-      this.todos.push({id: largestId+1, title: currentTodo, status: "In Progress", subTodos: []});
+      this.todos.push({id: largestId+1, title: currentTodo, status: "In Progress", isCollapsed: false, subTodos: []});
     }
+    localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+  }
+
+  toggleCollapse(todoIndex: number){
+    this.todos[todoIndex].isCollapsed = !this.todos[todoIndex].isCollapsed;
     localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
   }
 
@@ -120,7 +102,6 @@ export class AppComponent {
     if(currentSubTodo?.trim()){  // Only process if user entered something
       let largestId = this.todos[todoIndex].subTodos[this.todos[todoIndex].subTodos.length-1]?.id || 0;
       this.todos[todoIndex].subTodos.push({id: largestId+1, title: currentSubTodo, status: "In Progress"});
-      console.log(this.todos);
       if(this.todos[todoIndex].status === "Complete"){
         this.todos[todoIndex].status = "In Progress";
       }
@@ -129,3 +110,5 @@ export class AppComponent {
   }
 
 }
+
+// npm run build --output-path docs --base-href todo

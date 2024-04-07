@@ -8,5 +8,6 @@ export interface Todo {
     id: number,
     title: string,
     status: "In Progress" | "Complete",
-    subTodos: SubTodo[]
+    isCollapsed: boolean,
+    subTodos: SubTodo[],
 }
