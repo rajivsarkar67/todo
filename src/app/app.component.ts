@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SubTodo, Todo } from './custom.interface';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, CommonModule],
+    imports: [CommonModule],
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
@@ -17,6 +16,7 @@ export class AppComponent {
   ngOnInit(){
     const storedData = localStorage.getItem('todos');
     this.todos = storedData? JSON.parse(storedData) : [];
+    console.log(this.todos);
   }
 
   toggleStatusOfTodo(e: any, index: number){
@@ -106,6 +106,23 @@ export class AppComponent {
       }
     }
     localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+  }
+
+  editTodo(todoIndex: number){
+    let answer = prompt('Enter new value');
+    if(answer){
+      this.todos[todoIndex].title = answer;
+      localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    }
+  }
+
+  editSubTodo(todoIndex: number, subTodoIndex: number){
+    console.log(todoIndex, subTodoIndex);
+    let answer = prompt('Enter new value');
+    if(answer){
+      this.todos[todoIndex].subTodos[subTodoIndex].title = answer;
+      localStorage.setItem('todos', JSON.stringify(this.todos));  // Saving in localstorage
+    }
   }
 
 }

@@ -11,7 +11,8 @@
                         <button (click)="addSubTodo(todoIndex)">➕</button>
                     </span>
                     <span style="float: right; margin-right: 1rem; ">
-                        <button (click)="toggleCollapse(todoIndex)">{{!todo.isCollapsed?'🔼':'🔽'}}</button>
+                        <button (click)="editTodo(todoIndex)">✏️</button>
+                        <button style="margin-left: 1rem;" (click)="toggleCollapse(todoIndex)">{{!todo.isCollapsed?'🔼':'🔽'}}</button>
                         <button style="margin-left: 1rem; font-weight: 600;" (click)="deleteTodo(todoIndex)">X</button>
                     </span>
                 </p>
@@ -19,7 +20,10 @@
                     @for (subTodo of todo.subTodos; track subTodo.id; let subTodoIndex = $index){
                         <p style="font-size: 1.1rem;" [ngStyle]="subTodo.status === 'Complete'?{'text-decoration':'line-through', color: 'gray'}:{}">
                             <input type="checkbox" style="margin-right: 1rem;" [checked]="subTodo.status === 'Complete'" (click)="toggleStatusOfSubTodo($event, todoIndex, subTodoIndex)"/>{{subTodo.title}}
-                            <button style="float: right; margin-right: 1rem;" (click)="deleteSubTodo(todoIndex, subTodoIndex)">X</button>
+                            <span style="float: right; margin-right: 1rem;">
+                                <button (click)="editSubTodo(todoIndex, subTodoIndex)">✏️</button>
+                                <button style="margin-left: 1rem;" (click)="deleteSubTodo(todoIndex, subTodoIndex)">X</button>
+                            </span>
                         </p>
                     }
                 </div>
