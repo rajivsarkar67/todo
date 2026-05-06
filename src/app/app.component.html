@@ -2,12 +2,12 @@
 <br/>
 
 <div>
-    @if (todos.length){
-        @for (todo of todos; track todo.id; let todoIndex = $index){
-            <div [ngStyle]="{'background-color': colorArr[todoIndex % colorArr.length]}" style="border-radius: 1rem; padding: 0.1rem 0 0.1rem 0.8rem; margin: 1rem;">
-                <p style="font-size: 1.5rem; font-weight: 700; margin: 0;" [ngStyle]="todo.status === 'Complete'?{'text-decoration':'line-through', color: 'gray'}:{}">
+    @if (todos().length){
+        @for (todo of todos(); track todo.id; let todoIndex = $index){
+            <div [style.backgroundColor]="colorArr[todoIndex % colorArr.length]" style="border-radius: 1rem; padding: 0.1rem 0 0.1rem 0.8rem; margin: 1rem;">
+                <p style="font-size: 1.5rem; font-weight: 700; margin: 0;" [style.textDecoration]="todo.status === 'Complete'?'line-through':''" [style.color]="todo.status === 'Complete'?'gray':''">
                     <span>
-                        <input type="checkbox" style="margin-right: 1rem;" [checked]="todo.status === 'Complete'" (click)="toggleStatusOfTodo($event, todoIndex)"/>{{todo.title}}
+                        <input type="checkbox" [checked]="todo.status === 'Complete'" (click)="toggleStatusOfTodo($event, todoIndex)"/>{{todo.title}}
                         <button (click)="addSubTodo(todoIndex)">➕</button>
                     </span>
                     <span style="float: right; margin-right: 1rem; ">
@@ -16,11 +16,14 @@
                         <button style="margin-left: 1rem; font-weight: 600;" (click)="deleteTodo(todoIndex)">X</button>
                     </span>
                 </p>
-                <div style="padding-left: 1.6rem;" [ngStyle]="todo.isCollapsed?{display: 'none'}:{}">
+                <div style="padding-left: 1.1rem;" [style.display]="todo.isCollapsed?'none':''">
                     @for (subTodo of todo.subTodos; track subTodo.id; let subTodoIndex = $index){
-                        <p style="font-size: 1.1rem;" [ngStyle]="subTodo.status === 'Complete'?{'text-decoration':'line-through', color: 'gray'}:{}">
-                            <input type="checkbox" style="margin-right: 1rem;" [checked]="subTodo.status === 'Complete'" (click)="toggleStatusOfSubTodo($event, todoIndex, subTodoIndex)"/>{{subTodo.title}}
-                            <span style="float: right; margin-right: 1rem;">
+                        <p style="font-size: 1.1rem; display: flex; justify-content: space-between;">
+                            <span [style.textDecoration]="subTodo.status === 'Complete'?'line-through':''" [style.color]="subTodo.status === 'Complete'?'gray':''">
+                                <input type="checkbox" [checked]="subTodo.status === 'Complete'" (click)="toggleStatusOfSubTodo($event, todoIndex, subTodoIndex)"/>
+                                {{subTodo.title}}
+                            </span>
+                            <span style="display: flex; height: 1.5rem; margin-right: 1rem;">
                                 <button (click)="editSubTodo(todoIndex, subTodoIndex)">✏️</button>
                                 <button style="margin-left: 1rem;" (click)="deleteSubTodo(todoIndex, subTodoIndex)">X</button>
                             </span>
