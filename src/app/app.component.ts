@@ -1,6 +1,5 @@
-import { Component, signal } from '@angular/core';
-
-import { SubTodo, Todo } from './custom.interface';
+import { Component, OnInit, signal } from '@angular/core';
+import type { Todo } from './custom.interface';
 
 @Component({
     selector: 'app-root',
@@ -8,122 +7,145 @@ import { SubTodo, Todo } from './custom.interface';
     templateUrl: './app.component.html',
     styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  colorArr = ['#646fff', 'lightcoral', 'greenyellow', 'lightskyblue', 'lightgray', '#4dffbe', 'violet', '#f1f17e'];
-  todos = signal<Todo[]>([]);
+  readonly colorArr = ['#646fff', 'lightcoral', 'greenyellow', 'lightskyblue', 'lightgray', '#4dffbe', 'violet', '#f1f17e'];
+  readonly todos = signal<Todo[]>([]);
 
-  ngOnInit(){
+  ngOnInit(): void {
     const storedData = localStorage.getItem('todos');
-    this.todos.set(storedData? JSON.parse(storedData) : []);
-    // this.todos = storedData? JSON.parse(storedData) : [];
-    console.log(this.todos());
+    this.todos.set(storedData ? JSON.parse(storedData) as Todo[] : []);
   }
 
-  toggleStatusOfTodo(e: any, index: number){
-    // Marking the todo and all subTodos as complete
-    if(e.target.checked){
-      this.todos()[index].status = 'Complete';
-      this.todos()[index].subTodos.forEach((el: SubTodo) => {
-        el.status = "Complete";
-      })
-    }
-    // Marking the todo and all subTodos as in progress
-    else if(!e.target.checked){
-      this.todos()[index].status = 'In Progress';
-      this.todos()[index].subTodos.forEach((el: SubTodo) => {
-        el.status = "In Progress";
-      })
-    }
-    // Storing in localstorage
-    localStorage.setItem('todos', JSON.stringify(this.todos()));
+  toggleStatusOfTodo(event: Event, index: number): void {
+    const status: Todo['status'] = (event.target as HTMLInputElement).checked ? 'Complete' : 'In Progress';
+
+    this.updateTodos(todos => todos.map((todo, todoIndex) => todoIndex === index
+      ? {
+          ...todo,
+          status,
+          subTodos: todo.subTodos.map(subTodo => ({ ...subTodo, status })),
+        }
+      : todo));
   }
 
-  toggleStatusOfSubTodo(e: any, todoIndex: number, subTodoIndex: number){
-    if(e.target.checked){
-      this.todos()[todoIndex].subTodos[subTodoIndex].status = "Complete";
-      // If all subTodos are checked, make the parent also as checked.
-      this.checkSubTodosAndMarkParentTodo(todoIndex);
-    }
-    else if(!e.target.checked){
-      this.todos()[todoIndex].subTodos[subTodoIndex].status = "In Progress";
-      // If the parent todo is already complete, then make it incomplete
-      if(this.todos()[todoIndex].status === "Complete"){
-        this.todos()[todoIndex].status = "In Progress";
+  toggleStatusOfSubTodo(event: Event, todoIndex: number, subTodoIndex: number): void {
+    const status: Todo['status'] = (event.target as HTMLInputElement).checked ? 'Complete' : 'In Progress';
+
+    this.updateTodos(todos => todos.map((todo, index) => {
+      if (index !== todoIndex) {
+        return todo;
       }
-    }
-    // Storing in localstorage
-    localStorage.setItem('todos', JSON.stringify(this.todos()));
-  }
 
-  deleteTodo(todoIndex: number){
-    let sure: boolean = confirm('Are you sure you want to delete?');
-    if(sure){
-      this.todos().splice(todoIndex, 1);
-      localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
-    }
-  }
+      const subTodos = todo.subTodos.map((subTodo, subIndex) => subIndex === subTodoIndex
+        ? { ...subTodo, status }
+        : subTodo);
+      let todoStatus = todo.status;
 
-  deleteSubTodo(todoIndex: number, subTodoIndex: number){
-    let sure: boolean = confirm('Are you sure you want to delete?');
-    if(sure){
-      this.todos()[todoIndex].subTodos.splice(subTodoIndex, 1);
-      this.checkSubTodosAndMarkParentTodo(todoIndex);
-      localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
-    }
-  }
-
-  // This function is to check if all the sub-todos are completed, then mark the parent also as complete
-  checkSubTodosAndMarkParentTodo(todoIndex: number){
-    for(let i=0; i<this.todos()[todoIndex].subTodos.length; i++){
-      if(this.todos()[todoIndex].subTodos[i].status === "In Progress"){
-        return;
+      if (status === 'Complete' && subTodos.every(subTodo => subTodo.status === 'Complete')) {
+        todoStatus = 'Complete';
+      } else if (status === 'In Progress' && todo.status === 'Complete') {
+        todoStatus = 'In Progress';
       }
+
+      return { ...todo, status: todoStatus, subTodos };
+    }));
+  }
+
+  deleteTodo(todoIndex: number): void {
+    if (confirm('Are you sure you want to delete?')) {
+      this.updateTodos(todos => todos.filter((_, index) => index !== todoIndex));
     }
-    this.todos()[todoIndex].status = "Complete";
   }
 
-  addTodo(){
-    let currentTodo = prompt('Enter the Todo Heading: ');
-    if(currentTodo?.trim()){  // Only process if user entered something
-      let largestId = this.todos()[this.todos().length-1]?.id || 0;
-      this.todos().push({id: largestId+1, title: currentTodo, status: "In Progress", isCollapsed: false, subTodos: []});
+  deleteSubTodo(todoIndex: number, subTodoIndex: number): void {
+    if (confirm('Are you sure you want to delete?')) {
+      this.updateTodos(todos => todos.map((todo, index) => {
+        if (index !== todoIndex) {
+          return todo;
+        }
+
+        const subTodos = todo.subTodos.filter((_, subIndex) => subIndex !== subTodoIndex);
+        const status = subTodos.every(subTodo => subTodo.status === 'Complete') ? 'Complete' : todo.status;
+        return { ...todo, status, subTodos };
+      }));
     }
-    localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
   }
 
-  toggleCollapse(todoIndex: number){
-    this.todos()[todoIndex].isCollapsed = !this.todos()[todoIndex].isCollapsed;
-    localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
-  }
-
-  addSubTodo(todoIndex: number){
-    let currentSubTodo = prompt('Enter the Task: ');
-    if(currentSubTodo?.trim()){  // Only process if user entered something
-      let largestId = this.todos()[todoIndex].subTodos[this.todos()[todoIndex].subTodos.length-1]?.id || 0;
-      this.todos()[todoIndex].subTodos.push({id: largestId+1, title: currentSubTodo, status: "In Progress"});
-      if(this.todos()[todoIndex].status === "Complete"){
-        this.todos()[todoIndex].status = "In Progress";
+  addTodo(): void {
+    const currentTodo = prompt('Enter the Todo Heading: ');
+    this.updateTodos(todos => {
+      if (!currentTodo?.trim()) {
+        return [...todos];
       }
-    }
-    localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
+
+      const largestId = todos[todos.length - 1]?.id ?? 0;
+      return [...todos, {
+        id: largestId + 1,
+        title: currentTodo,
+        status: 'In Progress',
+        isCollapsed: false,
+        subTodos: [],
+      }];
+    });
   }
 
-  editTodo(todoIndex: number){
-    let answer = prompt('Enter new value', this.todos()[todoIndex].title);
-    if(answer){
-      this.todos()[todoIndex].title = answer;
-      localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
-    }
+  toggleCollapse(todoIndex: number): void {
+    this.updateTodos(todos => todos.map((todo, index) => index === todoIndex
+      ? { ...todo, isCollapsed: !todo.isCollapsed }
+      : todo));
   }
 
-  editSubTodo(todoIndex: number, subTodoIndex: number){
-    console.log(todoIndex, subTodoIndex);
-    let answer = prompt('Enter new value', this.todos()[todoIndex].subTodos[subTodoIndex].title); 
-    if(answer){
-      this.todos()[todoIndex].subTodos[subTodoIndex].title = answer;
-      localStorage.setItem('todos', JSON.stringify(this.todos()));  // Saving in localstorage
-    }
+  addSubTodo(todoIndex: number): void {
+    const currentSubTodo = prompt('Enter the Task: ');
+    this.updateTodos(todos => todos.map((todo, index) => {
+      if (index !== todoIndex || !currentSubTodo?.trim()) {
+        return todo;
+      }
+
+      const largestId = todo.subTodos[todo.subTodos.length - 1]?.id ?? 0;
+      return {
+        ...todo,
+        status: todo.status === 'Complete' ? 'In Progress' : todo.status,
+        subTodos: [...todo.subTodos, {
+          id: largestId + 1,
+          title: currentSubTodo,
+          status: 'In Progress',
+        }],
+      };
+    }));
   }
 
+  editTodo(todoIndex: number): void {
+    const answer = prompt('Enter new value', this.todos()[todoIndex].title);
+    if (!answer) {
+      return;
+    }
+
+    this.updateTodos(todos => todos.map((todo, index) => index === todoIndex && answer
+      ? { ...todo, title: answer }
+      : todo));
+  }
+
+  editSubTodo(todoIndex: number, subTodoIndex: number): void {
+    const answer = prompt('Enter new value', this.todos()[todoIndex].subTodos[subTodoIndex].title);
+    if (!answer) {
+      return;
+    }
+
+    this.updateTodos(todos => todos.map((todo, index) => index === todoIndex && answer
+      ? {
+          ...todo,
+          subTodos: todo.subTodos.map((subTodo, subIndex) => subIndex === subTodoIndex
+            ? { ...subTodo, title: answer }
+            : subTodo),
+        }
+      : todo));
+  }
+
+  private updateTodos(update: (todos: Todo[]) => Todo[]): void {
+    const todos = update(this.todos());
+    this.todos.set(todos);
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }
 }
