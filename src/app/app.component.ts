@@ -5,7 +5,6 @@ import type { Todo } from './custom.interface';
     selector: 'app-root',
     imports: [],
     templateUrl: './app.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
