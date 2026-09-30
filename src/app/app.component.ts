@@ -117,7 +117,6 @@ export class AppComponent implements OnInit {
   }
 
   editTodo(todoIndex: number): void {
-    // dummy commit
     const answer = prompt('Enter new value', this.todos()[todoIndex].title);
     if (!answer) {
       return;
